@@ -30,6 +30,19 @@
 session_start();
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
     echo "Welcome to the member's area, " . $_SESSION['username'] . "!";
+    ?>
+
+    <form name="article-form" id="article-form" action="add_article.php" method="post">
+        <label>Artikelname<input type="text" name="artikelname" id="artikelname" placeholder="Artikelname"></label>
+        <br>
+        <label>Artikelinhalt<textarea name="artikelinhalt" id="artikelinhalt"></textarea></label>
+        <br>
+        <input name="username" style="display: none" type="text" value="<?php echo $_SESSION['username']; ?>">
+        <br>
+        <label>datum<input type="date" name="date_event" id="date_event" placeholder="Datum"></label>
+        <button type="submit">Senden</button>
+    </form>
+    <?php
 } else {
     echo "Please log in first to see this page.";
     ?>
@@ -63,6 +76,44 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
         <input type="submit">
     </form>
 <?php } ?>
+<?php
+require_once("config.php");
+
+$conn = new mysqli($servername, $username, "", $databasename);
+
+if (createConnection($conn))
+    fetchArticles($conn);
+
+function createConnection($conn)
+{
+    if ($conn->connect_error) {
+        echo "Failed to connect to MySQL: " . mysqli_connect_error();
+        return FALSE;
+    }
+    echo "Connected successfully";
+
+    return true;
+}
+
+function fetchArticles($conn)
+{
+    $query = "SELECT * from articles";
+    $result = $conn->query($query);
+    while ($row = $result->fetch_assoc()) {
+        $artikelname = $row["articlename"];
+        $artikelninhalt = $row["content"];
+        $dateevent = (string)$row["date_event"];
+        $created = $row["created"];
+        print($artikelname);
+
+        ?>
+
+        <h2><?php echo $artikelname; ?> am <?php echo $dateevent; ?></h2>
+        <p><?php echo $artikelninhalt; ?></p>
+        <p><?php echo $created; ?></p>
+        <hr>
+    <?php }
+} ?>
 <p>
     <a href="logout.php">Logout</a>
 </p>
